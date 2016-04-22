@@ -30,7 +30,7 @@ abstract class AbstractStarWarsTest extends AbstractTypeGeneratorTest
 
         $this->classLoader->setPsr4('GraphQL\\Tests\\', __DIR__ . '/../vendor/webonyx/graphql-php/tests');
 
-        $this->generateSchema();
+        $this->generateClasses();
 
         Config::enableValidation();
 

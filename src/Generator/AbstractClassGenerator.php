@@ -35,14 +35,14 @@ abstract class AbstractClassGenerator
     /**
      * Number of spaces to use for indention in generated code.
      */
-    private $numSpaces = 4;
+    private $numSpaces;
 
     /**
      * The actual spaces to use for indention.
      *
      * @var string
      */
-    private $spaces = '    ';
+    private $spaces;
 
     private static $templates = [];
 
@@ -54,6 +54,7 @@ abstract class AbstractClassGenerator
     {
         $this->setClassNamespace($classNamespace);
         $this->setSkeletonDirs($skeletonDirs);
+        $this->setNumSpaces(4);
     }
 
     public function getClassNamespace()
@@ -71,13 +72,13 @@ abstract class AbstractClassGenerator
     public function setSkeletonDirs($skeletonDirs = null)
     {
         if (null === $skeletonDirs) {
-            $this->skeletonDirs = __DIR__ . '/../Resources/skeleton';
+            $skeletonDirs = __DIR__ . '/../Resources/skeleton';
         } else {
             if (!is_dir($skeletonDirs)) {
                 throw new \InvalidArgumentException(sprintf('Skeleton dir "%s" not found.', $skeletonDirs));
             }
-            $this->skeletonDirs = realpath($skeletonDirs);
         }
+        $this->skeletonDirs = realpath($skeletonDirs);
 
         return $this;
     }
@@ -141,7 +142,7 @@ abstract class AbstractClassGenerator
         $codeParsed = ClassUtils::shortenClassFromCode(
             $code,
             function ($matches) {
-                return $this->shortenClassFromCode($matches[1]);
+                return $this->shortenClassName($matches[1]);
             }
         );
 
@@ -203,9 +204,7 @@ abstract class AbstractClassGenerator
 
     protected function generateNamespace()
     {
-        if (null !== $this->classNamespace) {
-            return 'namespace ' . $this->classNamespace . ';';
-        }
+        return null !== $this->classNamespace ? 'namespace ' . $this->classNamespace . ';' : null;
     }
 
     protected function generateUseStatement(array $config)

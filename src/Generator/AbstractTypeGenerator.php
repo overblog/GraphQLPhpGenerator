@@ -76,16 +76,12 @@ abstract class AbstractTypeGenerator extends AbstractClassGenerator
 
     public static function getInternalTypes($name)
     {
-        if (isset(self::$internalTypes[$name])) {
-            return self::$internalTypes[$name];
-        }
+        return isset(self::$internalTypes[$name]) ? self::$internalTypes[$name] : null;
     }
 
     public static function getWrappedType($name)
     {
-        if (isset(self::$wrappedTypes[$name])) {
-            return self::$wrappedTypes[$name];
-        }
+        return isset(self::$wrappedTypes[$name]) ? self::$wrappedTypes[$name] : null;
     }
     
     protected function generateParentClassName(array $config)
@@ -119,18 +115,12 @@ EOF;
         }
 
         $value = $values[$key];
-
-        if (is_callable($value)) {
-            $func = $values[$key];
-            $value = call_user_func($func);
-        }
-
         $code = $default;
 
         if (is_array($value)) {
             $code = str_replace('","', '", "', json_encode($value));
         } elseif ($this->isExpression($value)) {
-            $code = $this->getExpressionLanguage()->compile($value[$key]);
+            $code = $this->getExpressionLanguage()->compile($value);
         } elseif (!is_object($value)) {
             $code = var_export($value, true);
         }
@@ -197,7 +187,7 @@ EOF;
         $code = $this->processTemplatePlaceHoldersReplacements($template, $config['config']);
         $code = ltrim($this->prefixCodeWithSpaces($code, 2));
 
-        return $this->shortenClassFromCode($code);
+        return $code;
     }
 
     public function typeAlias2String($alias)
@@ -227,10 +217,6 @@ EOF;
 
     public function types2String(array $types)
     {
-        if (empty($types)) {
-            return '[]';
-        }
-
         $types = array_map(__CLASS__ . '::typeAlias2String', $types);
 
         return '[' . implode(', ', $types) . ']';
