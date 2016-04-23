@@ -88,4 +88,9 @@ abstract class AbstractTypeGeneratorTest extends TestCase
             $configs
         );
     }
+
+    protected function getType($type)
+    {
+        return call_user_func(["\\".$this->typeGenerator->getClassNamespace().'\\'.$type.'Type', 'getInstance']);
+    }
 }

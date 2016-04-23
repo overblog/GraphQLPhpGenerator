@@ -40,11 +40,6 @@ abstract class AbstractStarWarsTest extends AbstractTypeGeneratorTest
         $this->schema = new Schema($this->getType('Query'));
     }
 
-    protected function getType($type)
-    {
-        return call_user_func(["\\".$this->typeGenerator->getClassNamespace().'\\'.$type.'Type', 'getInstance']);
-    }
-
     /**
      * Helper function to test a query and the expected response.
      */

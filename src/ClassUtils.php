@@ -39,4 +39,9 @@ abstract class ClassUtils
 
         return $codeParsed;
     }
+
+    public static function cleanUseStatement($use)
+    {
+        return ltrim($use, '\\');
+    }
 }
