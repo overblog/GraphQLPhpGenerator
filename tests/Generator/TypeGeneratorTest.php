@@ -79,31 +79,64 @@ class TypeGeneratorTest extends AbstractTypeGeneratorTest
      */
     public function testTypeAlias2StringInvalidListOf()
     {
-        $this->generateClasses(
-            [
-                'T' => [
-                    'type' => 'object',
-                    'config' => [
-                        'fields' => [
-                            'invalidlistOfString' => ['type' => '[String'],
-                        ]
-                    ],
-                ]
-            ], $this->tmpDir
-
-        );
+        $this->generateClasses([
+            'T' => [
+                'type' => 'object',
+                'config' => [
+                    'fields' => [
+                        'invalidlistOfString' => ['type' => '[String'],
+                    ]
+                ],
+            ]
+        ]);
     }
 
     public function testAddTraitAndClearTraits()
     {
         $trait = __NAMESPACE__ . '\\FooTrait';
-        $this->typeGenerator->addTrait($trait);
-        $this->generateClasses($this->getConfigs());
+        $interface = __NAMESPACE__ . '\\FooInterface';
+        $this->typeGenerator->addTrait($trait)
+            ->addImplement($interface);
+        $this->generateClasses(['U' => $this->getConfigs()['T']]);
+
+        /** @var FooInterface|ObjectType $type */
+        $type = $this->getType('U');
+
+        $this->assertInstanceOf($interface, $type);
+        $this->assertEquals('Foo::bar', $type->bar());
+
+        $this->typeGenerator->clearTraits()
+            ->clearImplements();
+        $this->generateClasses(['V' => $this->getConfigs()['T']]);
 
         /** @var ObjectType $type */
-        $type = $this->getType('T');
+        $type = $this->getType('V');
 
-        $this->assertEquals('Foo::bar', $type->bar());
+        $this->assertNotInstanceOf($interface, $type);
+        $this->assertFalse(method_exists($type, 'bar'));
+    }
+
+    public function testCallbackEntryDoesNotTreatObject()
+    {
+        $this->generateClasses([
+            'W' => [
+                'type' => 'object',
+                'config' => [
+                    'fields' => [
+                        'resolveObject' => ['type' => '[String]', 'resolve' => new \stdClass()],
+                        'resolveAnyNotObject' => ['type' => '[String]', 'resolve' => ['result' => 1]],
+                    ]
+                ],
+            ]
+        ]);
+
+        /** @var ObjectType $type */
+        $type = $this->getType('W');
+
+        $this->assertNull($type->getField('resolveObject')->resolveFn);
+        $resolveFn = $type->getField('resolveAnyNotObject')->resolveFn;
+        $this->assertInstanceOf('\Closure', $resolveFn);
+        $this->assertEquals(['result' => 1], $resolveFn());
     }
 
     private function getConfigs()

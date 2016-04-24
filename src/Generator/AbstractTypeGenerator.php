@@ -109,24 +109,39 @@ abstract class AbstractTypeGenerator extends AbstractClassGenerator
 EOF;
     }
 
-    protected function varExportFromArrayValue(array $values, $key, $default = 'null')
+    protected function varExportFromArrayValue(array $values, $key, $default = 'null', $indent='')
     {
         if (!isset($values[$key])) {
             return $default;
         }
 
-        $value = $values[$key];
-        $code = $default;
-
-        if (is_array($value)) {
-            $code = str_replace('","', '", "', json_encode($value));
-        } elseif ($this->isExpression($value)) {
-            $code = $this->getExpressionLanguage()->compile($value);
-        } elseif (!is_object($value)) {
-            $code = var_export($value, true);
-        }
+        $code = $this->varExport($values[$key], $indent, $default);
 
         return $code;
+    }
+
+    protected function varExport($var, $indent='', $default = null)
+    {
+        switch (true) {
+            case is_array($var):
+                $indexed = array_keys($var) === range(0, count($var) - 1);
+                $r = [];
+                foreach ($var as $key => $value) {
+                    $r[] = "$indent    "
+                        . ($indexed ? '' : $this->varExport($key, $indent, $default) . ' => ')
+                        . $this->varExport($value, "$indent    ", $default);
+                }
+                return "[\n" . implode(",\n", $r) . "\n" . $indent . "]";
+
+            case $this->isExpression($var):
+                return $code = $this->getExpressionLanguage()->compile($var);
+
+            case is_object($var):
+                return $default;
+
+            default:
+                return var_export($var, true);
+        }
     }
 
     protected function processFromArray(array $values, $templatePrefix)
@@ -147,7 +162,12 @@ EOF;
             return $default;
         }
 
-        $code = 'function (%s) { return %s; }';
+        $code = <<<FUNC
+function (%s) {
+<spaces><spaces>return %s; 
+<spaces>}
+FUNC;
+
 
         if (is_callable($value[$key])) {
             $func = $value[$key];
@@ -174,7 +194,7 @@ EOF;
 
             return $code;
         } elseif (!is_object($value[$key])) {
-            $code = sprintf($code, null, $this->varExportFromArrayValue($value, $key));
+            $code = sprintf($code, null, $this->varExportFromArrayValue($value, $key, $default, '<spaces><spaces>'));
 
             return $code;
         }
@@ -266,6 +286,7 @@ EOF;
     public function generateClass(array $config, $outputDirectory, $regenerateIfExists = false)
     {
         static $treatLater = ['useStatement', 'spaces'];
+        $this->clearInternalUseStatements();
         $code = $this->processTemplatePlaceHoldersReplacements('TypeSystem', $config, $treatLater);
         $code = $this->processPlaceHoldersReplacements($treatLater, $code, $config) . "\n";
 

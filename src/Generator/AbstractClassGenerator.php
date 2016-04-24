@@ -92,12 +92,14 @@ abstract class AbstractClassGenerator
      *
      * @param integer $numSpaces
      *
-     * @return void
+     * @return self
      */
     public function setNumSpaces($numSpaces)
     {
         $this->spaces = str_repeat(' ', $numSpaces);
         $this->numSpaces = $numSpaces;
+
+        return $this;
     }
 
     public function addTrait($trait)
@@ -106,11 +108,15 @@ abstract class AbstractClassGenerator
         if (!in_array($cleanTrait, $this->traits)) {
             $this->traits[] = $cleanTrait;
         }
+
+        return $this;
     }
 
     public function clearTraits()
     {
         $this->traits = [];
+
+        return $this;
     }
 
     public function addImplement($implement)
@@ -119,11 +125,15 @@ abstract class AbstractClassGenerator
         if (!in_array($cleanImplement, $this->implements)) {
             $this->implements[] = $cleanImplement;
         }
+
+        return $this;
     }
 
     public function clearImplements()
     {
         $this->implements = [];
+
+        return $this;
     }
 
     public function addUseStatement($useStatement)
@@ -132,11 +142,15 @@ abstract class AbstractClassGenerator
         if (!in_array($cleanUse, $this->useStatements)) {
             $this->useStatements[] = $cleanUse;
         }
+
+        return $this;
     }
 
     public function clearUseStatements()
     {
         $this->useStatements = [];
+
+        return $this;
     }
 
     public function getSkeletonContent($skeleton)
@@ -167,6 +181,8 @@ abstract class AbstractClassGenerator
     protected function clearInternalUseStatements()
     {
         $this->internalUseStatements = [];
+
+        return $this;
     }
 
     protected function shortenClassName($definition, $isInternal = true)
@@ -267,7 +283,6 @@ abstract class AbstractClassGenerator
     protected function generateUseStatement(array $config)
     {
         $useStatements = $this->tokenizeUseStatements(array_merge($this->internalUseStatements, $this->useStatements));
-        $this->clearInternalUseStatements();
 
         return $useStatements;
     }
