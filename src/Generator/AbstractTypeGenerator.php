@@ -109,29 +109,28 @@ abstract class AbstractTypeGenerator extends AbstractClassGenerator
 EOF;
     }
 
-    protected function varExportFromArrayValue(array $values, $key, $default = 'null', $indent='')
+    protected function varExportFromArrayValue(array $values, $key, $default = 'null')
     {
         if (!isset($values[$key])) {
             return $default;
         }
 
-        $code = $this->varExport($values[$key], $indent, $default);
+        $code = $this->varExport($values[$key], $default);
 
         return $code;
     }
 
-    protected function varExport($var, $indent='', $default = null)
+    protected function varExport($var, $default = null)
     {
         switch (true) {
             case is_array($var):
                 $indexed = array_keys($var) === range(0, count($var) - 1);
                 $r = [];
                 foreach ($var as $key => $value) {
-                    $r[] = "$indent    "
-                        . ($indexed ? '' : $this->varExport($key, $indent, $default) . ' => ')
-                        . $this->varExport($value, "$indent    ", $default);
+                    $r[] = ($indexed ? '' : $this->varExport($key, $default) . ' => ')
+                        . $this->varExport($value, $default);
                 }
-                return "[\n" . implode(",\n", $r) . "\n" . $indent . "]";
+                return "[" . implode(", ", $r)  . "]";
 
             case $this->isExpression($var):
                 return $code = $this->getExpressionLanguage()->compile($var);
@@ -162,19 +161,14 @@ EOF;
             return $default;
         }
 
-        $code = <<<FUNC
-function (%s) {
-<spaces><spaces>return %s; 
-<spaces>}
-FUNC;
-
+        $code = $this->getSkeletonContent('ResolverClosure');
 
         if (is_callable($value[$key])) {
             $func = $value[$key];
             $code = sprintf($code, null, 'call_user_func_array(%s, func_get_args())');
 
             if (is_array($func) && isset($func[0]) && is_string($func[0])) {
-                $code = sprintf($code, str_replace('","', '", "', json_encode($func)));
+                $code = sprintf($code, $this->varExport($func));
 
                 return $code;
             } elseif (is_string($func)) {
@@ -194,7 +188,7 @@ FUNC;
 
             return $code;
         } elseif (!is_object($value[$key])) {
-            $code = sprintf($code, null, $this->varExportFromArrayValue($value, $key, $default, '<spaces><spaces>'));
+            $code = sprintf($code, null, $this->varExportFromArrayValue($value, $key, $default));
 
             return $code;
         }

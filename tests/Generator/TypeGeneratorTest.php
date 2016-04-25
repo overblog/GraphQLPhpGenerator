@@ -106,7 +106,8 @@ class TypeGeneratorTest extends AbstractTypeGeneratorTest
         $this->assertEquals('Foo::bar', $type->bar());
 
         $this->typeGenerator->clearTraits()
-            ->clearImplements();
+            ->clearImplements()
+            ->clearUseStatements();
         $this->generateClasses(['V' => $this->getConfigs()['T']]);
 
         /** @var ObjectType $type */
@@ -121,7 +122,9 @@ class TypeGeneratorTest extends AbstractTypeGeneratorTest
         $this->generateClasses([
             'W' => [
                 'type' => 'object',
+
                 'config' => [
+                    'description' => new \stdClass(),
                     'fields' => [
                         'resolveObject' => ['type' => '[String]', 'resolve' => new \stdClass()],
                         'resolveAnyNotObject' => ['type' => '[String]', 'resolve' => ['result' => 1]],
@@ -134,9 +137,46 @@ class TypeGeneratorTest extends AbstractTypeGeneratorTest
         $type = $this->getType('W');
 
         $this->assertNull($type->getField('resolveObject')->resolveFn);
+        $this->assertNull($type->getField('resolveObject')->description);
         $resolveFn = $type->getField('resolveAnyNotObject')->resolveFn;
         $this->assertInstanceOf('\Closure', $resolveFn);
         $this->assertEquals(['result' => 1], $resolveFn());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Generator [Overblog\GraphQLGenerator\Generator\TypeGenerator::generateFake] for placeholder "fake" is not callable.
+     */
+    public function testProcessInvalidPlaceHoldersReplacements()
+    {
+        $this->typeGenerator->setSkeletonDirs(__DIR__.'/../Resources/Skeleton');
+
+        $this->generateClasses($this->getConfigs());
+    }
+
+    public function testTypeSingletonCantBeClone()
+    {
+        $this->generateClasses($this->getConfigs());
+
+        /** @var ObjectType $type */
+        $type = $this->getType('T');
+
+        $this->setExpectedException('\DomainException', 'You can not clone a singleton.');
+
+        $t = clone $type;
+    }
+
+    public function testTypeSingletonCanBeInstantiatedOnlyOnce()
+    {
+        $this->generateClasses($this->getConfigs());
+
+        /** @var ObjectType $type */
+        $type = $this->getType('T');
+
+        $this->setExpectedException('\DomainException', 'You can not create more than one copy of a singleton.');
+
+        $class = get_class($type);
+        $t = new $class();
     }
 
     private function getConfigs()
