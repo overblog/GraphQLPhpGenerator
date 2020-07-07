@@ -40,7 +40,7 @@ abstract class AbstractStarWarsTest extends AbstractTypeGeneratorTest
     protected function assertValidQuery(string $query, array $expected, array $variables = null): void
     {
         // TODO(mcg-web): remove this when migrating to webonyx/graphql-php >= 14.0
-        $debug = class_exists('GraphQL\Error\DebugFlag') ? DebugFlag::class : Debug::class;
+        $debug = \class_exists('GraphQL\Error\DebugFlag') ? DebugFlag::class : Debug::class;
         
         $actual = GraphQL::executeQuery($this->schema, $query, null, null, $variables)
             ->toArray($debug::INCLUDE_DEBUG_MESSAGE | $debug::INCLUDE_TRACE);
