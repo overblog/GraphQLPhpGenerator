@@ -12,6 +12,7 @@
 namespace Overblog\GraphQLGenerator\Tests;
 
 use GraphQL\Error\Debug;
+use GraphQL\Error\DebugFlag;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use Overblog\GraphQLGenerator\Tests\Generator\AbstractTypeGeneratorTest;
@@ -38,8 +39,11 @@ abstract class AbstractStarWarsTest extends AbstractTypeGeneratorTest
 
     protected function assertValidQuery(string $query, array $expected, array $variables = null): void
     {
+        // TODO(mcg-web): remove this when migrating to webonyx/graphql-php >= 14.0
+        $debug = \class_exists('GraphQL\Error\DebugFlag') ? DebugFlag::class : Debug::class;
+        
         $actual = GraphQL::executeQuery($this->schema, $query, null, null, $variables)
-            ->toArray(Debug::INCLUDE_DEBUG_MESSAGE | Debug::INCLUDE_TRACE);
+            ->toArray($debug::INCLUDE_DEBUG_MESSAGE | $debug::INCLUDE_TRACE);
         $expected = ['data' => $expected];
         $this->assertEquals($expected, $actual, \json_encode($actual));
     }
