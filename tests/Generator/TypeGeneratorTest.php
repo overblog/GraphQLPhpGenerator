@@ -46,7 +46,11 @@ class TypeGeneratorTest extends AbstractTypeGeneratorTest
     public function testWrongGetSkeletonDirs(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageRegExp('/Skeleton "fake" could not be found in .*\/skeleton./');
+        if (\method_exists($this, 'expectExceptionMessageMatches')) {
+            $this->expectExceptionMessageMatches('/Skeleton "fake" could not be found in .*\/skeleton./');
+        } else {
+            $this->expectExceptionMessageRegExp('/Skeleton "fake" could not be found in .*\/skeleton./');
+        }
         $this->typeGenerator->getSkeletonContent('fake');
     }
 

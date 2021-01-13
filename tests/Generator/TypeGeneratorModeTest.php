@@ -62,13 +62,17 @@ class TypeGeneratorModeTest extends TestCase
         $classes = $this->typeGenerator->generateClasses(self::CONFIG, $this->dir, $mode);
         $file = $this->dir.'/QueryType.php';
         $this->assertEquals(['Overblog\CG\GraphQLGenerator\__Schema__\QueryType' => $this->dir.'/QueryType.php'], $classes);
-        if (\method_exists($this, 'assertDirectoryNotExists')) {
+        if (\method_exists($this, 'assertDirectoryDoesNotExist')) {
+            $this->assertDirectoryDoesNotExist($this->dir);
+        } elseif (\method_exists($this, 'assertDirectoryNotExists')) {
             $this->assertDirectoryNotExists($this->dir);
         } else { // for phpunit 4
             $this->assertFalse(\file_exists($this->dir));
             $this->assertFalse(\is_dir($this->dir));
         }
-        if (\method_exists($this, 'assertFileNotExists')) {
+        if (\method_exists($this, 'assertFileDoesNotExist')) {
+            $this->assertFileDoesNotExist($file);
+        } elseif (\method_exists($this, 'assertFileNotExists')) {
             $this->assertFileNotExists($file);
         } else { // for phpunit 4
             $this->assertFalse(\file_exists($file));

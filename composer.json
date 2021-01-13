@@ -2,7 +2,11 @@
     "name": "overblog/graphql-php-generator",
     "type": "library",
     "description": "GraphQL types generator",
-    "keywords": ["GraphQL", "type", "generator"],
+    "keywords": [
+        "GraphQL",
+        "type",
+        "generator"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -10,7 +14,7 @@
             "homepage": "http://www.over-blog.com"
         }
     ],
-    "config" : {
+    "config": {
         "sort-packages": true,
         "bin-dir": "bin"
     },
@@ -20,7 +24,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.14",
-        "phpunit/phpunit": "^5.7.26 || ^6.0 || ^7.2",
+        "phpunit/phpunit": "^5.7.26 || ^6.0 || ^7.2 || ^9.0",
         "symfony/expression-language": "^3.4",
         "symfony/filesystem": "^3.4",
         "symfony/process": "^3.4",
